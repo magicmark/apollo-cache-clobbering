@@ -1,9 +1,7 @@
-import { print, parse } from 'graphql';
-import Layout from './Layout';
-import dedent from 'dedent';
+import { print } from 'graphql';
 import { gql } from '@apollo/client';
 import { useQuery, useApolloClient } from '@apollo/client/react';
-import { useState, useEffect, useRef, useImperativeHandle } from 'react';
+import { useState, useEffect, useRef, useReducer } from 'react';
 import indentString from 'indent-string';
 
 /**
@@ -37,7 +35,7 @@ const BookWithAuthorBirthdate = gql`
     }
 `;
 
-function CodeCard({ title, query, load }) {
+function CodeCard({ query, load }) {
     const operationName = getOperationName(query);
     return (
         <div className="card bg-base-100 w-96 shadow-sm">
@@ -134,12 +132,12 @@ function ClearCacheState({ resetVisibility }) {
 }
 
 function CacheState() {
-    const [time, setTime] = useState(Date.now());
+    const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
     useEffect(() => {
         // client.extract() will not recieve updates.
         // Awkwardly rerender this component every 100ms.
-        const interval = setInterval(() => setTime(Date.now()), 100);
+        const interval = setInterval(forceUpdate, 100);
         return () => clearInterval(interval);
     }, []);
 
@@ -148,7 +146,7 @@ function CacheState() {
     return <pre className="text-sm mt-2">{JSON.stringify(cacheState, null, 2)}</pre>;
 }
 
-function AuthorDetailLabel({ query, title, getter }) {
+function AuthorDetailLabel({ query, getter }) {
     const { data, loading, error } = useQuery(query);
 
     if (loading) {
@@ -228,8 +226,8 @@ function App() {
                 </p>
             </div>
             <div className="flex gap-4 w-full mt-4">
-                <CodeCard title="Fetch Author Name" query={BookWithAuthorName} load={loadAuthorName} />
-                <CodeCard title="Fetch Author Birthday" query={BookWithAuthorBirthdate} load={loadAuthorBirthday} />
+                <CodeCard query={BookWithAuthorName} load={loadAuthorName} />
+                <CodeCard query={BookWithAuthorBirthdate} load={loadAuthorBirthday} />
                 <ClearCacheState
                     resetVisibility={() => setVisibility({ isNameVisible: false, isBirthdayVisible: false })}
                 />
