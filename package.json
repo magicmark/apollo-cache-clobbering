@@ -1,0 +1,18 @@
+{
+    "name": "apollo-cache-playground",
+    "version": "0.0.0-not-distributed",
+    "author": "Mark Larah <mark@larah.me>",
+    "license": "AGPL-3.0",
+    "packageManager": "pnpm@10.13.1",
+    "scripts": {
+        "format": "prettier . --write",
+        "dev:frontend": "pnpm run --dir frontend dev",
+        "dev:server": "pnpm run --dir server start",
+        "dev": "concurrently --kill-others-on-fail pnpm:dev:*"
+    },
+    "dependencies": {
+        "concurrently": "^9.2.1",
+        "gitignore-to-dockerignore": "^3.0.0",
+        "prettier": "^3.7.4"
+    }
+}
