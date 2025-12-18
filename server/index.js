@@ -44,13 +44,15 @@ const root = {
 const app = express();
 
 // Security: Set security headers with Helmet
+// Note: In production, consider using nonces/hashes instead of 'unsafe-inline'
+// for better XSS protection. This requires coordination with your frontend build.
 app.use(
     helmet({
         contentSecurityPolicy: {
             directives: {
                 defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
+                scriptSrc: ["'self'", "'unsafe-inline'"], // TODO: Replace with nonces in production
+                styleSrc: ["'self'", "'unsafe-inline'"], // TODO: Replace with nonces in production
                 imgSrc: ["'self'", 'data:', 'https:'],
                 connectSrc: ["'self'"],
             },
@@ -60,9 +62,15 @@ app.use(
 );
 
 // Security: Enable CORS with proper configuration
+const allowedOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',')
+    : NODE_ENV === 'production'
+      ? []
+      : ['*'];
+
 app.use(
     cors({
-        origin: NODE_ENV === 'production' ? false : '*', // Restrict in production
+        origin: allowedOrigins.length === 0 ? false : allowedOrigins,
         methods: ['GET', 'POST'],
         credentials: true,
     }),
@@ -117,6 +125,12 @@ app.all(
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('Error:', err);
+    
+    // Check if headers have already been sent
+    if (res.headersSent) {
+        return next(err);
+    }
+    
     res.status(err.status || 500).json({
         error: NODE_ENV === 'production' ? 'Internal server error' : err.message,
     });

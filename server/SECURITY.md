@@ -25,7 +25,8 @@ This document outlines the security and resiliency improvements made to the Expr
 ### 4. CORS Configuration
 - Properly configured CORS with method restrictions
 - Development mode allows all origins
-- Production mode restricts origins (should be configured per deployment)
+- Production mode uses CORS_ORIGINS environment variable (comma-separated list)
+- Falls back to no origins in production if CORS_ORIGINS not set
 - Credentials support enabled
 
 ### 5. Error Handling
@@ -33,6 +34,7 @@ This document outlines the security and resiliency improvements made to the Expr
 - Production mode hides sensitive error details
 - Proper error logging for debugging
 - 404 handler for undefined routes
+- Prevents "Cannot set headers after they are sent" errors by checking if headers were already sent
 
 ## Resiliency Enhancements
 
@@ -72,11 +74,12 @@ This document outlines the security and resiliency improvements made to the Expr
 ### Environment Variables
 - `PORT`: Server port (default: 4000)
 - `NODE_ENV`: Environment mode (development/production)
+- `CORS_ORIGINS`: Comma-separated list of allowed CORS origins (e.g., `https://example.com,https://app.example.com`)
 
 ### Recommendations for Production
 
 1. **Set NODE_ENV**: `NODE_ENV=production`
-2. **Configure CORS**: Set specific allowed origins instead of `*`
+2. **Configure CORS**: Set `CORS_ORIGINS` environment variable with specific allowed origins (e.g., `CORS_ORIGINS=https://example.com,https://app.example.com`)
 3. **Use HTTPS**: Deploy behind a reverse proxy with TLS/SSL
 4. **Adjust Rate Limits**: Fine-tune based on expected traffic
 5. **Add Monitoring**: Integrate with APM tools (e.g., New Relic, DataDog)
